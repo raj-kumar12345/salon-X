@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@theme {
+  --breakpoint-mdl: 900px;
+}
+
+body {
+  font-family: 'Bebas Neue', sans-serif;
+}
