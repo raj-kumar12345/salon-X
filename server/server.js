@@ -15,6 +15,7 @@ connectDB();
 
 app.use(cors({
     origin: "http://localhost:5173",
+    origin: "https://salon-l31coth1q-rajkumarsah25022004-5733s-projects.vercel.app/",
     credentials: true
 }))
 
