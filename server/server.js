@@ -13,26 +13,15 @@ const app = express();
 // Connect Database
 connectDB();
 
-// FIXED: Define an array of allowed origins (No trailing slashes allowed)
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://salon-l31coth1q-rajkumarsah25022004-5733s-projects.vercel.app"
+  "https://salon-x-rust.vercel.app"
 ];
 
-// FIXED CORS configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps, curl, or Postman)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+    origin: allowedOrigins,
+    credentials: true
+}))
 
 // Middlewares
 app.use(cookieParser());
