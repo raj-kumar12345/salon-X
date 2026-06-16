@@ -19,11 +19,14 @@ const Register = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.post("/auth/register", data);
+      
       if (response.data.success) {
-        navigate("/verify-otp");
+        // Safe check: data pass kiya taaki verify-otp page par access kar sakein
+        navigate("/verify-otp", { state: { email: data.email } });
         reset();
       }
     } catch (error) {
+      console.error(error);
       alert(error.response?.data?.message || "Something went wrong!");
     } finally {
       setLoading(false);

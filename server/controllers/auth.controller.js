@@ -39,34 +39,35 @@ const userRegisterController = async (req, res) => {
         const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 1000-9999
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
+       // OTP settings aur save karne ke baad...
         await otpModel.findOneAndUpdate(
             { email: email.toLowerCase() },
             { otp, expiresAt, verified: false },
             { upsert: true, returnDocument: 'after' }
         );
 
-        // 🔥 FIXED: Email service ko try-catch mein dala taaki server freeze na ho
+        // 🔥 FIX: Is pure block ko try-catch mein wrap karein taaki agar email server slow ho ya fail ho, toh backend atke nahi
         try {
             await sendEmailForVerification(email.toLowerCase(), otp);
         } catch (emailError) {
-            console.log("Email Sending Failed but continuing registration:", emailError);
-            // Hame crash nahi karna hai, bas console me log karke aage badhna hai
+            console.log("Email service failed but user created:", emailError);
+            // Server hang nahi hoga, error log karke aage badh jayega
         }
 
-        // 3. JWT and Cookies Configuration
+        // Token generation...
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
         
-        // 🔥 FIXED: Production aur Localhost dono ke liye cookie settings adjust ki
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Production par true, local par false
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Cross-domain access ke liye production par "none" zaroori hai
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
         const userResponse = newUser.toObject();
         delete userResponse.password;
 
+        // Frontend ko response ab har haal mein milega!
         return res.status(201).json({
             success: true,
             message: "user Registered Successfully",
