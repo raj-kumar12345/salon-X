@@ -5,42 +5,64 @@ const crypto = require("crypto");
 const otpModel = require("../models/otp.model");
 const { sendEmailForVerification, sendEmailForForgetPassword} = require("../services/email.service")
 
-const userRegisterController = async (req,res) =>{
+const userRegisterController = async (req, res) => {
     try {
-        
-        const {name,email,mobile,password} = req.body;
-        if(!name || !email || !mobile || !password){
+        const { name, email, mobile, password } = req.body;
+        if (!name || !email || !mobile || !password) {
             return res.status(400).json({
+                success: false, // consistency ke liye success boolean add kiya
                 message: "All Fields are required"
-            })
+            });
         }
 
-        const existedUser = await userModel.findOne({ $or: [{email: email.toLowerCase()},{mobile}]});
-        if(existedUser){
+        // Email ko lowercase karke check kar rahe hain
+        const existedUser = await userModel.findOne({ 
+            $or: [{ email: email.toLowerCase() }, { mobile }] 
+        });
+        
+        if (existedUser) {
             return res.status(409).json({
+                success: false,
                 message: "user Already Registered! Login Please"
-            })
+            });
         }
 
+        // 1. Create New User
         const newUser = await userModel.create({
-            name,email: email.toLowerCase(),mobile,password
-        })
+            name,
+            email: email.toLowerCase(),
+            mobile,
+            password
+        });
 
+        // 2. Generate OTP Settings
         const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 1000-9999
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
         await otpModel.findOneAndUpdate(
-            {email},
-            {otp,expiresAt,verified: false},
+            { email: email.toLowerCase() },
+            { otp, expiresAt, verified: false },
             { upsert: true, returnDocument: 'after' }
-        )
-        await sendEmailForVerification(email, otp);
+        );
 
-        const token = jwt.sign({id: newUser._id}, process.env.JWT_SECRET_KEY,{expiresIn: "7d"})
-        res.cookie("token",token,{
+        // 🔥 FIXED: Email service ko try-catch mein dala taaki server freeze na ho
+        try {
+            await sendEmailForVerification(email.toLowerCase(), otp);
+        } catch (emailError) {
+            console.log("Email Sending Failed but continuing registration:", emailError);
+            // Hame crash nahi karna hai, bas console me log karke aage badhna hai
+        }
+
+        // 3. JWT and Cookies Configuration
+        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
+        
+        // 🔥 FIXED: Production aur Localhost dono ke liye cookie settings adjust ki
+        res.cookie("token", token, {
             httpOnly: true,
-            secure: true
-        })
+            secure: process.env.NODE_ENV === "production", // Production par true, local par false
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Cross-domain access ke liye production par "none" zaroori hai
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         const userResponse = newUser.toObject();
         delete userResponse.password;
@@ -49,15 +71,14 @@ const userRegisterController = async (req,res) =>{
             success: true,
             message: "user Registered Successfully",
             user: userResponse
-        })
-
+        });
 
     } catch (error) {
-        console.log(error);
+        console.log("Global Registration Error:", error);
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
-        })
+        });
     }
 }
 
