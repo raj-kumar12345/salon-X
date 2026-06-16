@@ -14,6 +14,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import RegisterAsBarber from "../pages/RegisterAsBarber";
 import LoginAsBarber from "../pages/LoginAsBarber";
 import BarberHome from "../pages/BarberHome";
+import ResetPassword from "../pages/ResetPassword";
 
 const AppRouter = () => {
 
@@ -33,6 +34,10 @@ const AppRouter = () => {
         {
             path:"/forget-password",
             element:<ForgetPassword />
+        },
+        {
+            path: "/reset-password",
+            element: <ResetPassword />
         },
         {
             path: "/",
