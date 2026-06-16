@@ -14,24 +14,23 @@ const Register = () => {
     formState: { errors },
     reset,
   } = useForm();
-
-  const onSubmit = async (data) => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.post("/auth/register", data);
-      
-      if (response.data.success) {
-        // Safe check: data pass kiya taaki verify-otp page par access kar sakein
-        navigate("/verify-otp", { state: { email: data.email } });
-        reset();
-      }
-    } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.message || "Something went wrong!");
-    } finally {
-      setLoading(false);
+const onSubmit = async (data) => {
+  try {
+    setLoading(true);
+    const response = await axiosInstance.post("/auth/register", data);
+    
+    if (response.data.success) {
+      // 🔥 FIXED: Ab direct Home page par redirect karega
+      navigate("/"); 
+      reset();
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert(error.response?.data?.message || "Something went wrong!");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Tailwind Class for Inputs
   const inputBase = "w-full bg-black/50 text-white border border-white/10 p-3.5 pl-11 rounded-xl outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all text-sm placeholder:text-gray-600";

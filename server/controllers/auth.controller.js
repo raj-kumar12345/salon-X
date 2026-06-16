@@ -10,7 +10,7 @@ const userRegisterController = async (req, res) => {
         const { name, email, mobile, password } = req.body;
         if (!name || !email || !mobile || !password) {
             return res.status(400).json({
-                success: false, // consistency ke liye success boolean add kiya
+                success: false, 
                 message: "All Fields are required"
             });
         }
@@ -35,26 +35,29 @@ const userRegisterController = async (req, res) => {
             password
         });
 
+        /* =========================================================================
+        // ⏳ FUTURE USE KE LIYE OTP AUR EMAIL WALA CODE COMMENTED HAI:
+        
         // 2. Generate OTP Settings
         const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 1000-9999
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-       // OTP settings aur save karne ke baad...
+        // OTP settings aur save karne ke baad...
         await otpModel.findOneAndUpdate(
             { email: email.toLowerCase() },
             { otp, expiresAt, verified: false },
             { upsert: true, returnDocument: 'after' }
         );
 
-        // 🔥 FIX: Is pure block ko try-catch mein wrap karein taaki agar email server slow ho ya fail ho, toh backend atke nahi
+        // Email block
         try {
             await sendEmailForVerification(email.toLowerCase(), otp);
         } catch (emailError) {
             console.log("Email service failed but user created:", emailError);
-            // Server hang nahi hoga, error log karke aage badh jayega
         }
+        ========================================================================= */
 
-        // Token generation...
+        // 2. Token generation... (Direct login ke liye cookie set karega)
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
         
         res.cookie("token", token, {
@@ -67,10 +70,10 @@ const userRegisterController = async (req, res) => {
         const userResponse = newUser.toObject();
         delete userResponse.password;
 
-        // Frontend ko response ab har haal mein milega!
+        // Frontend ko response bhejenge (Ab success true instantly mil jayega)
         return res.status(201).json({
             success: true,
-            message: "user Registered Successfully",
+            message: "user Registered and Logged In Successfully",
             user: userResponse
         });
 
