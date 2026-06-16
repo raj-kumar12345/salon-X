@@ -23,13 +23,18 @@ const Appointment = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Nesting check for location object
     if (["houseNo", "pincode", "city"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
         location: { ...prev.location, [name]: value },
       }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      // For date and time top-level attributes
+      setFormData((prev) => ({ 
+        ...prev, 
+        [name]: value 
+      }));
     }
   };
 
@@ -64,7 +69,7 @@ const Appointment = () => {
     <div className="min-h-screen bg-[#0a0a0a] pt-24 pb-20 text-white px-4 overflow-x-hidden">
       <div className="max-w-6xl mx-auto">
         
-        {/* HEADER SECTION - Optimized for 350px */}
+        {/* HEADER SECTION */}
         <div className="mb-10 text-center">
           <h1 className="text-[28px] xs:text-3xl md:text-5xl font-black mb-3 tracking-tight">
             Finalize <span className="text-amber-500">Booking</span>
@@ -95,7 +100,7 @@ const Appointment = () => {
             </div>
           </div>
 
-          {/* RIGHT: THE BOOKING FORM - Inputs stack on tiny screens */}
+          {/* RIGHT: THE BOOKING FORM */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] space-y-5">
               
@@ -118,15 +123,30 @@ const Appointment = () => {
                 <input type="text" name="city" required placeholder="Select your city" value={formData.location.city} onChange={handleChange} className="w-full px-5 py-3.5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-amber-500 transition-all text-sm" />
               </div>
 
-              {/* Date & Time Stacking for 350px */}
+              {/* FIXED: Date & Time Picker inputs with explicit color inversion for Dark Mode native controls */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-5 pt-2">
                 <div className="space-y-2">
-                   <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Select Date</label>
-                   <input type="date" name="date" required value={formData.date} onChange={handleChange} min={new Date().toISOString().split("T")[0]} className="w-full px-5 py-3.5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-amber-500 text-white text-sm" />
+                  <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Select Date</label>
+                  <input 
+                    type="date" 
+                    name="date" 
+                    required 
+                    value={formData.date} 
+                    onChange={handleChange} 
+                    min={new Date().toISOString().split("T")[0]} 
+                    className="w-full px-5 py-3.5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-amber-500 text-white text-sm scheme-dark" 
+                  />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Select Time</label>
-                   <input type="time" name="time" required value={formData.time} onChange={handleChange} className="w-full px-5 py-3.5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-amber-500 text-white text-sm" />
+                  <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Select Time</label>
+                  <input 
+                    type="time" 
+                    name="time" 
+                    required 
+                    value={formData.time} 
+                    onChange={handleChange} 
+                    className="w-full px-5 py-3.5 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-amber-500 text-white text-sm scheme-dark" 
+                  />
                 </div>
               </div>
 
